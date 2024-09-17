@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Soenneker.Extensions.DateTime.DayOfWeek.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Extensions.DateTime.DayOfWeek.csproj" />
     </ItemGroup>
 
 </Project>
