@@ -1,5 +1,4 @@
 using AwesomeAssertions;
-using Xunit;
 
 namespace Soenneker.Extensions.DateTime.DayOfWeek.Tests;
 
