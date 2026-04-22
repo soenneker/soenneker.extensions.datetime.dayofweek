@@ -4,14 +4,14 @@ namespace Soenneker.Extensions.DateTime.DayOfWeek.Tests;
 
 public class DateTimeDayOfWeekExtensionTests
 {
-    [Theory]
-    [InlineData(System.DayOfWeek.Monday)]
-    [InlineData(System.DayOfWeek.Tuesday)]
-    [InlineData(System.DayOfWeek.Wednesday)]
-    [InlineData(System.DayOfWeek.Thursday)]
-    [InlineData(System.DayOfWeek.Friday)]
-    [InlineData(System.DayOfWeek.Saturday)]
-    [InlineData(System.DayOfWeek.Sunday)]
+    [Test]
+    [Arguments(System.DayOfWeek.Monday)]
+    [Arguments(System.DayOfWeek.Tuesday)]
+    [Arguments(System.DayOfWeek.Wednesday)]
+    [Arguments(System.DayOfWeek.Thursday)]
+    [Arguments(System.DayOfWeek.Friday)]
+    [Arguments(System.DayOfWeek.Saturday)]
+    [Arguments(System.DayOfWeek.Sunday)]
     public void ToPreviousDayOfWeek_ReturnsCorrectDate(System.DayOfWeek dayOfWeek)
     {
         // Arrange
@@ -25,14 +25,14 @@ public class DateTimeDayOfWeekExtensionTests
         result.Should().Be(expectedDate);
     }
 
-    [Theory]
-    [InlineData(System.DayOfWeek.Monday)]
-    [InlineData(System.DayOfWeek.Tuesday)]
-    [InlineData(System.DayOfWeek.Wednesday)]
-    [InlineData(System.DayOfWeek.Thursday)]
-    [InlineData(System.DayOfWeek.Friday)]
-    [InlineData(System.DayOfWeek.Saturday)]
-    [InlineData(System.DayOfWeek.Sunday)]
+    [Test]
+    [Arguments(System.DayOfWeek.Monday)]
+    [Arguments(System.DayOfWeek.Tuesday)]
+    [Arguments(System.DayOfWeek.Wednesday)]
+    [Arguments(System.DayOfWeek.Thursday)]
+    [Arguments(System.DayOfWeek.Friday)]
+    [Arguments(System.DayOfWeek.Saturday)]
+    [Arguments(System.DayOfWeek.Sunday)]
     public void ToNextDayOfWeek_ReturnsCorrectDate(System.DayOfWeek dayOfWeek)
     {
         // Arrange
@@ -48,3 +48,4 @@ public class DateTimeDayOfWeekExtensionTests
         result.Should().Be(expectedDate);
     }
 }
+
