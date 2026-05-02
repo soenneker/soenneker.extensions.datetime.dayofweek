@@ -44,6 +44,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Extensions.DateTime.Day" Version="4.0.1957" />
+        <PackageReference Include="Soenneker.Extensions.DateTime.Day" Version="4.0.1958" />
     </ItemGroup>
 </Project>
