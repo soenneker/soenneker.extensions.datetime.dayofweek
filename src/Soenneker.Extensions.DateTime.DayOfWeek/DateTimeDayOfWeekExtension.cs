@@ -102,8 +102,7 @@ public static class DateTimeDayOfWeekExtension
     [Pure]
     public static System.DateTime ToStartOfPreviousTzDayOfWeek(this System.DateTime utcNow, System.DayOfWeek dayOfWeek, System.TimeZoneInfo tzInfo)
     {
-        System.DateTime result = utcNow.ToTz(tzInfo).ToStartOfPreviousDayOfWeek(dayOfWeek).ToUtc(tzInfo);
-        return result;
+        return GetTzDayOfWeekBoundary(utcNow, dayOfWeek, tzInfo, next: false, end: false);
     }
 
     /// <summary>
@@ -116,8 +115,7 @@ public static class DateTimeDayOfWeekExtension
     [Pure]
     public static System.DateTime ToStartOfNextTzDayOfWeek(this System.DateTime utcNow, System.DayOfWeek dayOfWeek, System.TimeZoneInfo tzInfo)
     {
-        System.DateTime result = utcNow.ToTz(tzInfo).ToStartOfNextDayOfWeek(dayOfWeek).ToUtc(tzInfo);
-        return result;
+        return GetTzDayOfWeekBoundary(utcNow, dayOfWeek, tzInfo, next: true, end: false);
     }
 
     /// <summary>
@@ -130,8 +128,7 @@ public static class DateTimeDayOfWeekExtension
     [Pure]
     public static System.DateTime ToEndOfPreviousTzDayOfWeek(this System.DateTime utcNow, System.DayOfWeek dayOfWeek, System.TimeZoneInfo tzInfo)
     {
-        System.DateTime result = utcNow.ToTz(tzInfo).ToEndOfPreviousDayOfWeek(dayOfWeek).ToUtc(tzInfo);
-        return result;
+        return GetTzDayOfWeekBoundary(utcNow, dayOfWeek, tzInfo, next: false, end: true);
     }
 
     /// <summary>
@@ -144,7 +141,44 @@ public static class DateTimeDayOfWeekExtension
     [Pure]
     public static System.DateTime ToEndOfNextTzDayOfWeek(this System.DateTime utcNow, System.DayOfWeek dayOfWeek, System.TimeZoneInfo tzInfo)
     {
-        System.DateTime result = utcNow.ToTz(tzInfo).ToEndOfNextDayOfWeek(dayOfWeek).ToUtc(tzInfo);
-        return result;
+        return GetTzDayOfWeekBoundary(utcNow, dayOfWeek, tzInfo, next: true, end: true);
+    }
+
+    private static System.DateTime GetTzDayOfWeekBoundary(System.DateTime utc, System.DayOfWeek dayOfWeek, System.TimeZoneInfo timeZoneInfo,
+        bool next, bool end)
+    {
+        System.DateTime utcInstant = utc.Kind == System.DateTimeKind.Utc
+            ? utc
+            : System.DateTime.SpecifyKind(utc, System.DateTimeKind.Utc);
+        System.DateTime local = System.TimeZoneInfo.ConvertTimeFromUtc(utcInstant, timeZoneInfo);
+
+        int distance = next
+            ? (dayOfWeek - local.DayOfWeek + 7) % 7
+            : (local.DayOfWeek - dayOfWeek + 7) % 7;
+        if (distance == 0)
+            distance = 7;
+
+        int signedDistance = next ? distance : -distance;
+        System.DateTime boundary = local.Date.AddDays(signedDistance + (end ? 1 : 0));
+        System.DateTime resolved = ResolveLocalBoundary(boundary, timeZoneInfo);
+
+        return end ? resolved.AddTicks(-1) : resolved;
+    }
+
+    private static System.DateTime ResolveLocalBoundary(System.DateTime boundary, System.TimeZoneInfo timeZoneInfo)
+    {
+        boundary = System.DateTime.SpecifyKind(boundary, System.DateTimeKind.Unspecified);
+
+        while (timeZoneInfo.IsInvalidTime(boundary))
+            boundary = boundary.AddMinutes(1);
+
+        if (timeZoneInfo.IsAmbiguousTime(boundary))
+        {
+            System.TimeSpan[] offsets = timeZoneInfo.GetAmbiguousTimeOffsets(boundary);
+            System.TimeSpan chosenOffset = offsets[0] >= offsets[1] ? offsets[0] : offsets[1];
+            return System.DateTime.SpecifyKind(boundary - chosenOffset, System.DateTimeKind.Utc);
+        }
+
+        return System.TimeZoneInfo.ConvertTimeToUtc(boundary, timeZoneInfo);
     }
 }

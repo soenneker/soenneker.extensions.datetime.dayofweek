@@ -5,7 +5,7 @@
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Extensions.DateTime.DayOfWeek
 
-A collection of helpful DateTime day of week based extension methods.
+Moves a `DateTime` to the strictly previous or next occurrence of a weekday, with optional day boundaries and time-zone-aware UTC results.
 
 ## Installation
 
@@ -13,24 +13,48 @@ A collection of helpful DateTime day of week based extension methods.
 dotnet add package Soenneker.Extensions.DateTime.DayOfWeek
 ```
 
-## Quick start
+## Navigate by weekday
 
 ```csharp
 using Soenneker.Extensions.DateTime.DayOfWeek;
 
-DateTime dateTime = DateTime.UtcNow;
-var result = dateTime.ToPreviousDayOfWeek(dayOfWeek);
+System.DateTime monday = new(2026, 8, 31, 15, 30, 0, DateTimeKind.Utc);
+
+System.DateTime previousFriday = monday.ToPreviousDayOfWeek(DayOfWeek.Friday);
+System.DateTime nextMonday = monday.ToNextDayOfWeek(DayOfWeek.Monday);
 ```
 
-## Common operations
+Navigation is strict. If the input is already on the requested weekday, the previous/next result is seven days away. `ToPreviousDayOfWeek()` and `ToNextDayOfWeek()` preserve the time of day and `Kind`.
 
-- `ToPreviousDayOfWeek()` - Calculates the date of the previous occurrence of the specified day of the week. Returns the date of the previous occurrence of the specified day of the week.
-- `ToNextDayOfWeek()` - Calculates the date of the next occurrence of the specified day of the week. Returns the date of the next occurrence of the specified day of the week.
-- `ToStartOfPreviousDayOfWeek()` - Calculates the start of the day for the previous occurrence of the specified day of the week. Returns a `System.DateTime` representing the start of the previous specified day of the week.
-- `ToStartOfNextDayOfWeek()` - Calculates the start of the day for the next occurrence of the specified day of the week. Returns a `System.DateTime` representing the start of the next specified day of the week.
-- `ToEndOfPreviousDayOfWeek()` - Calculates the end of the day for the previous occurrence of the specified day of the week. Returns a `System.DateTime` representing the end of the previous specified day of the week.
-- `ToEndOfNextDayOfWeek()` - Calculates the end of the day for the next occurrence of the specified day of the week. Returns a `System.DateTime` representing the end of the next specified day of the week.
-- `ToStartOfPreviousTzDayOfWeek()` - Calculates the start of the previous occurrence of the specified day of the week, adjusted for the specified time zone. Returns the start of the previous occurrence of the specified day of the week, adjusted to the start of the day in the specified time zone.
-- `ToStartOfNextTzDayOfWeek()` - Calculates the start of the next occurrence of the specified day of the week, adjusted for the specified time zone. Returns the start of the next occurrence of the specified day of the week, adjusted to the start of the day in the specified time zone.
-- `ToEndOfPreviousTzDayOfWeek()` - Calculates the end of the previous occurrence of the specified day of the week, adjusted for the specified time zone. Returns the end of the previous occurrence of the specified day of the week, adjusted to the end of the day in the specified time zone.
-- `ToEndOfNextTzDayOfWeek()` - Calculates the end of the next occurrence of the specified day of the week, adjusted for the specified time zone. Returns the end of the next occurrence of the specified day of the week, adjusted to the end of the day in the specified time zone.
+Use the boundary variants when the clock fields should be reset:
+
+```csharp
+System.DateTime previousFridayStart = monday.ToStartOfPreviousDayOfWeek(DayOfWeek.Friday);
+System.DateTime nextFridayEnd = monday.ToEndOfNextDayOfWeek(DayOfWeek.Friday);
+```
+
+Start methods return local clock midnight. End methods return one tick before the following date. These non-time-zone methods operate directly on the input fields and preserve `Kind`.
+
+## Time-zone-aware navigation
+
+```csharp
+TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+System.DateTime utc = new(2026, 8, 29, 18, 0, 0, DateTimeKind.Utc);
+
+System.DateTime nextMondayStartUtc =
+    utc.ToStartOfNextTzDayOfWeek(DayOfWeek.Monday, eastern);
+
+System.DateTime previousFridayEndUtc =
+    utc.ToEndOfPreviousTzDayOfWeek(DayOfWeek.Friday, eastern);
+```
+
+The time-zone variants first determine the input instant's local weekday, select the strictly previous or next matching local date, and return its boundary as a UTC `DateTime`:
+
+- `ToStartOfPreviousTzDayOfWeek()`
+- `ToStartOfNextTzDayOfWeek()`
+- `ToEndOfPreviousTzDayOfWeek()`
+- `ToEndOfNextTzDayOfWeek()`
+
+If the input `Kind` is not `Utc`, its fields are treated as UTC rather than converted from the machine's local zone. Supply an actual UTC value to avoid ambiguity.
+
+Boundaries use local calendar math. A midnight in a daylight-saving gap advances to the first valid local minute; an ambiguous midnight selects the earlier UTC instant. End values are one tick before the next valid local day boundary.

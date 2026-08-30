@@ -5,6 +5,18 @@ namespace Soenneker.Extensions.DateTime.DayOfWeek.Tests;
 public class DateTimeDayOfWeekExtensionTests
 {
     [Test]
+    public void ToStartOfNextTzDayOfWeek_advances_through_a_midnight_gap()
+    {
+        System.TimeZoneInfo saoPaulo = System.TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+        var beforeTransition = new System.DateTime(2018, 11, 3, 12, 0, 0, System.DateTimeKind.Utc);
+
+        System.DateTime result = beforeTransition.ToStartOfNextTzDayOfWeek(System.DayOfWeek.Sunday, saoPaulo);
+        System.DateTime localResult = System.TimeZoneInfo.ConvertTimeFromUtc(result, saoPaulo);
+
+        localResult.Should().Be(new System.DateTime(2018, 11, 4, 1, 0, 0, System.DateTimeKind.Unspecified));
+    }
+
+    [Test]
     [Arguments(System.DayOfWeek.Monday)]
     [Arguments(System.DayOfWeek.Tuesday)]
     [Arguments(System.DayOfWeek.Wednesday)]
